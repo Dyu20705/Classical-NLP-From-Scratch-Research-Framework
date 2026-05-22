@@ -1,10 +1,10 @@
 # ML Pipeline Implementation - Complete Package
 
-**Status**: ✅ **COMPLETE AND VALIDATED**
+**Status**: ✅ **CURRENT SNAPSHOT**
 
 ## Overview
 
-This is a production-ready Machine Learning pipeline for text sentiment classification with strict memory efficiency and data leakage prevention constraints.
+This is the current Machine Learning baseline for text sentiment classification with sparse feature extraction, Naive Bayes, Decision Tree, evaluation helpers, and a config-driven experiment runner.
 
 ### What You Get
 
@@ -87,15 +87,15 @@ print(f"Confusion Matrix:\n{cm}")
 ## Documentation
 
 ### 📚 Start Here
-- **FILE_SUMMARY.md** - What was created/modified
 - **IMPLEMENTATION_SUMMARY.md** - Complete overview
 - **VERIFICATION_CHECKLIST.md** - Requirements & constraints compliance
+- **ENGINEERING_REVIEW.md** - Current engineering risks and refactors
+- **report/BaoCaoBaiTap.md** - Current academic report in Vietnamese
 
 ### 📖 Learn More
-- **API_DOCUMENTATION.py** - Complete API reference for all components
-- **PRACTICAL_EXAMPLES.py** - 4 working examples (run as Python script)
-- **IMPLEMENTATION_VERIFICATION.py** - Detailed verification checklist
 - **tests/test_pipeline.py** - 10 test cases showing usage
+- **IMPLEMENTATION_SUMMARY.md** - Concise implementation snapshot
+- **VERIFICATION_CHECKLIST.md** - Current constraints and validation
 
 ---
 
@@ -300,12 +300,9 @@ tests/
 └── test_pipeline.py                 ✅ 10 test cases
 
 Documentation/
-├── FILE_SUMMARY.md                  ✅ What was created
 ├── IMPLEMENTATION_SUMMARY.md        ✅ Complete overview
 ├── VERIFICATION_CHECKLIST.md        ✅ Requirements & constraints
-├── API_DOCUMENTATION.py             ✅ API reference
-├── PRACTICAL_EXAMPLES.py            ✅ Working examples
-└── IMPLEMENTATION_VERIFICATION.py   ✅ Detailed verification
+└── ENGINEERING_REVIEW.md            ✅ Current engineering notes
 ```
 
 ---
@@ -410,7 +407,7 @@ print(f"Accuracy: {acc:.4f}")
 print(f"Confusion Matrix:\n{cm}")
 ```
 
-See **PRACTICAL_EXAMPLES.py** for more examples.
+See **IMPLEMENTATION_SUMMARY.md** and **tests/test_pipeline.py** for usage examples.
 
 ---
 
@@ -435,27 +432,26 @@ A: Always call `train_test_split()` FIRST, then fit vectorizer/model ONLY on tra
 
 ## Next Steps
 
-1. **Run Examples**: See PRACTICAL_EXAMPLES.py
-2. **Read Documentation**: See API_DOCUMENTATION.py
-3. **Check Tests**: See tests/test_pipeline.py
-4. **Start Coding**: Use components in your project
-5. **Extend**: Add custom models by inheriting from BaseModel
+1. **Read Documentation**: See IMPLEMENTATION_SUMMARY.md
+2. **Check Tests**: See tests/test_pipeline.py
+3. **Start Coding**: Use components in your project
+4. **Extend**: Add custom models by inheriting from BaseModel
 
 ---
 
 ## Support & Documentation
 
 - **Implementation Summary**: IMPLEMENTATION_SUMMARY.md
-- **API Reference**: API_DOCUMENTATION.py
-- **Working Examples**: PRACTICAL_EXAMPLES.py
 - **Test Cases**: tests/test_pipeline.py
 - **Verification**: VERIFICATION_CHECKLIST.md
+- **Engineering Review**: ENGINEERING_REVIEW.md
+- **Academic Report**: ../report/BaoCaoBaiTap.md
 
 ---
 
 ## Summary
 
-This is a **complete, production-ready ML pipeline** for text sentiment classification with:
+This is a **current ML baseline** for text sentiment classification with:
 
 ✅ Feature extraction (CountVectorizer, TfidfTransformer)
 ✅ Machine learning models (Naive Bayes, Decision Tree)
@@ -472,7 +468,7 @@ This is a **complete, production-ready ML pipeline** for text sentiment classifi
 
 ---
 
-**Status**: ✅ **COMPLETE AND VALIDATED**
+**Status**: ✅ **CURRENT SNAPSHOT**
 
-Date: 2026-05-04
+Date: 2026-05-22
 Repository: processing-sentiment-with-ml-model

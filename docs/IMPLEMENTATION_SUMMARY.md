@@ -4,8 +4,8 @@ SUMMARY OF IMPLEMENTATION
 ML Pipeline: Feature Extraction, Models, and Evaluation
 
 Project: processing-sentiment-with-ml-model
-Date: 2026-05-04
-Status: ✓ COMPLETE & VALIDATED
+Date: 2026-05-22
+Status: current snapshot of the sentiment pipeline and docs
 """
 
 # ============================================================================
@@ -13,11 +13,12 @@ Status: ✓ COMPLETE & VALIDATED
 # ============================================================================
 
 OVERVIEW = """
-✓ IMPLEMENTATION COMPLETE
+✓ CURRENT IMPLEMENTATION SNAPSHOT
 
-This implementation provides a complete, production-ready ML pipeline for
-text sentiment classification with strict memory efficiency and no data
-leakage constraints.
+This snapshot reflects the current sentiment-analysis baseline for the
+project: sparse feature extraction, Multinomial Naive Bayes, Decision Tree,
+stratified splitting, evaluation helpers, the experiment runner, and the
+current report/docs workflow.
 
 Core Components Implemented:
   1. CountVectorizer - Convert text to sparse count matrices
@@ -121,16 +122,12 @@ tests/test_pipeline.py
   - Validates: all APIs and interfaces
 
 DOCUMENTATION FILES (non-executable):
-  
-IMPLEMENTATION_VERIFICATION.py
-  - Verification checklist and logic validation
-  - Design trade-offs documentation
-  - Compliance checklist
-  
-API_DOCUMENTATION.py
-  - Complete API reference for all components
-  - Usage examples and patterns
-  - Parameter documentation
+
+README_IMPLEMENTATION.md
+   - Current usage guide and component overview
+
+VERIFICATION_CHECKLIST.md
+   - Current constraints, validation, and snapshot status
 """
 
 # ============================================================================
@@ -537,14 +534,17 @@ To use this implementation:
 2. Import and use:
    from src import CountVectorizer, NaiveBayes, train_test_split
    
-3. Follow usage patterns provided in API_DOCUMENTATION.py
+3. Follow usage patterns provided in README_IMPLEMENTATION.md
 
 4. Run test suite (requires numpy, scipy):
    python tests/test_pipeline.py
 
 5. Refer to test cases for concrete examples
 
-6. For debugging, use model.print_tree() for DecisionTree
+6. For debugging, use model.print_tree() for DecisionTree.
+
+7. For the current run workflow, see experiments/run_baseline.py and
+   report/BaoCaoBaiTap.md.
 
 Additional features you can add:
 - Cross-validation using train_test_split iteratively
