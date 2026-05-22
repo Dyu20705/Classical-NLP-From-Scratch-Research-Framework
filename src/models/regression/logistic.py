@@ -1,58 +1,58 @@
 import numpy as np
+from src.models.base import BaseModel
 
-def sigmoid(z):
-    return 1 / (1 + np.exp(-z))
 
-def cost_function(X, y, w, b):
-    m = len(y)
-    cost_sum = 0
-    for i in range(m):
-        z = np.dot(w, X[i]) + b
-        g= sigmoid(z)
-        cost_sum += -y[i] * np.log(g) - (1 - y[i]) * np.log(1 - g)
+class LogisticRegression(BaseModel):
+    """Binary logistic regression (from-scratch) for sentiment classification."""
 
-    return (1 / m) * cost_sum
+    def __init__(self, learning_rate=0.1, n_iters=1000, threshold=0.5, verbose=False):
+        self.learning_rate = learning_rate
+        self.n_iters = n_iters
+        self.threshold = threshold
+        self.verbose = verbose
+        self.w = None
+        self.b = 0.0
 
-def gradient_function(X, y, w, b):
-    n = len(w)
-    m = len(y)
-    grad_w = np.zeros(n)
-    grad_b = 0
+    @staticmethod
+    def _sigmoid(z):
+        z = np.clip(z, -500, 500)
+        return 1.0 / (1.0 + np.exp(-z))
 
-    for i in range(m):
-        z = np.dot(w, X[i]) + b
-        g = sigmoid(z)
-        grad_b += (g - y[i])
-        for j in range(n):
-            grad_w[j] += (g - y[i]) * X[i][j]
+    def fit(self, X, y):
+        if hasattr(X, 'toarray'):
+            X = X.toarray()
+        X = np.asarray(X, dtype=np.float32)
+        y = np.asarray(y).flatten().astype(np.float32)
 
-    grad_w /= m
-    grad_b /= m
+        n_samples, n_features = X.shape
+        self.w = np.zeros(n_features, dtype=np.float32)
+        self.b = 0.0
 
-    return grad_w, grad_b
+        for i in range(self.n_iters):
+            logits = X.dot(self.w) + self.b
+            probs = self._sigmoid(logits)
 
-def gradient_descent(X, y, alpha, interations):
-    w = np.zeros(n)
-    b = 0
+            dw = (1.0 / n_samples) * X.T.dot(probs - y)
+            db = float((1.0 / n_samples) * np.sum(probs - y))
 
-    for i in range(interations):
-        grad_w, grad_b = gradient_function(X, y, w, b)
-        w -= alpha * grad_w
-        b -= alpha * grad_b
+            self.w -= self.learning_rate * dw
+            self.b -= self.learning_rate * db
 
-        if i % 100 == 0:
-            cost = cost_function(X, y, w, b)
-            print(f"Cost after iteration {i}: {cost}")
+            if self.verbose and i % 100 == 0:
+                eps = 1e-12
+                p = np.clip(probs, eps, 1 - eps)
+                loss = -np.mean(y * np.log(p) + (1 - y) * np.log(1 - p))
+                print(f"[LogReg] iter={i:04d}, loss={loss:.6f}")
 
-    return w, b
+        return self
 
-def predict(X, w, b):
-    m = X.shape[0]
-    pred = np.zeros(m)
+    def predict_proba(self, X):
+        if hasattr(X, 'toarray'):
+            X = X.toarray()
+        X = np.asarray(X, dtype=np.float32)
+        probs = self._sigmoid(X.dot(self.w) + self.b)
+        return probs
 
-    for i in range(m):
-        z = np.dot(w, X[i]) + b
-        g = sigmoid(z)
-        pred[i] = 1 if g >= 0.5 else 0
-
-    return pred
+    def predict(self, X):
+        probs = self.predict_proba(X)
+        return (probs >= self.threshold).astype(int)

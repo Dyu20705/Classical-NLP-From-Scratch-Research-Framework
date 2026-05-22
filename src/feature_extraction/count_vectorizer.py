@@ -79,6 +79,11 @@ class CountVectorizer:
         token_counts = Counter()
         
         for doc in documents:
+            if doc is None:
+                doc = ''
+            if not isinstance(doc, str):
+                doc = str(doc)
+
             # Preprocess text
             if self.lowercase:
                 doc = doc.lower()
@@ -94,9 +99,9 @@ class CountVectorizer:
         
         # Sort by frequency and select top-k if max_features specified
         if self.max_features is None:
-            sorted_tokens = sorted(token_counts.items(), key=lambda x: -x[1])
+            sorted_tokens = sorted(token_counts.items(), key=lambda x: (-x[1], x[0]))
         else:
-            sorted_tokens = sorted(token_counts.items(), key=lambda x: -x[1])[:self.max_features]
+            sorted_tokens = sorted(token_counts.items(), key=lambda x: (-x[1], x[0]))[:self.max_features]
         
         # Create vocabulary mapping (token -> index)
         self.vocabulary_ = {token: idx for idx, (token, _) in enumerate(sorted_tokens)}
@@ -130,6 +135,11 @@ class CountVectorizer:
         values = []
         
         for doc_idx, doc in enumerate(documents):
+            if doc is None:
+                doc = ''
+            if not isinstance(doc, str):
+                doc = str(doc)
+
             # Preprocess text
             if self.lowercase:
                 doc = doc.lower()

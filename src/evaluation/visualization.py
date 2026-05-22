@@ -60,7 +60,9 @@ class MetricsVisualizer:
         plt.figure(figsize=figsize)
         
         if normalize:
-            cm_norm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+            row_sums = cm.sum(axis=1, keepdims=True).astype(float)
+            row_sums[row_sums == 0.0] = 1.0
+            cm_norm = cm.astype('float') / row_sums
             sns.heatmap(cm_norm, annot=cm, fmt='d', cmap=cmap, 
                        xticklabels=classes, yticklabels=classes,
                        cbar_kws={'label': 'Normalized Count'})

@@ -24,6 +24,15 @@ def train_test_split(X, y, test_size=0.2, random_state=42, stratify=True):
     X_train, X_test, y_train, y_test : array-like
         Split datasets maintaining class distribution if stratify=True.
     """
+    X = np.asarray(X)
+    y = np.asarray(y)
+
+    if X.shape[0] != y.shape[0]:
+        raise ValueError("X and y must contain the same number of samples")
+
+    if not (0 < test_size < 1):
+        raise ValueError("test_size must be in (0, 1)")
+
     if random_state is not None:
         np.random.seed(random_state)
 
@@ -44,6 +53,9 @@ def train_test_split(X, y, test_size=0.2, random_state=42, stratify=True):
             np.random.shuffle(cls_indices)
             
             n_train = int(len(cls_indices) * (1 - test_size))
+            # Keep at least one sample in train and test for each class when possible
+            if len(cls_indices) >= 2:
+                n_train = max(1, min(n_train, len(cls_indices) - 1))
             train_indices.extend(cls_indices[:n_train])
             test_indices.extend(cls_indices[n_train:])
         
@@ -67,13 +79,3 @@ def train_test_split(X, y, test_size=0.2, random_state=42, stratify=True):
     y_test = y[test_indices]
 
     return X_train, X_test, y_train, y_test
-    precision = precision_score(y_true, y_pred)
-    recall = recall_score(y_true, y_pred)
-    f1 = f1_score(y_true, y_pred)
-
-    return {
-        'accuracy': accuracy,
-        'precision': precision,
-        'recall': recall,
-        'f1_score': f1
-    }
