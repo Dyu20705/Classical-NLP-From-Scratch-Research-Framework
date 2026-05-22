@@ -41,20 +41,3 @@ class BaseModel(ABC):
             Predicted class labels.
         """
         pass
-
-    def predict_proba(self, X):
-        """Optional probability output for probabilistic classifiers."""
-        raise NotImplementedError(f"{self.__class__.__name__} does not implement predict_proba()")
-
-    def score(self, X, y):
-        """
-        Default score method.
-
-        For classification tasks this returns accuracy.
-        Regression models can override this behavior.
-        """
-        y_true = np.asarray(y).flatten()
-        y_pred = np.asarray(self.predict(X)).flatten()
-        if y_true.shape[0] != y_pred.shape[0]:
-            raise ValueError("y and predictions must have the same length")
-        return float(np.mean(y_true == y_pred))

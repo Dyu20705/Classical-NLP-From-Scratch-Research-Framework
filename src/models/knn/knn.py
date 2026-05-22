@@ -1,19 +1,26 @@
 import numpy as np
 from collections import Counter
+from src.models.base import BaseModel
 
 def euclidean_distance(x1, x2):
     return sum((x1 - x2) ** 2) ** 0.5
 
-class KNN:
+class KNN(BaseModel):
     def __init__(self, k=3):
         self.k = k
 
     def fit(self, X, y):
-        self.X_train = X
-        self.y_train = y
+        if hasattr(X, 'toarray'):
+            X = X.toarray()
+        self.X_train = np.asarray(X, dtype=np.float32)
+        self.y_train = np.asarray(y).flatten()
+        return self
 
-    def predict(self, new_point):
-        prediction = [self.predict_class(new_point) for new_point in new_point]
+    def predict(self, X):
+        if hasattr(X, 'toarray'):
+            X = X.toarray()
+        X = np.asarray(X, dtype=np.float32)
+        prediction = [self.predict_class(row) for row in X]
         return np.array(prediction)
 
     def predict_class(self, new_point):

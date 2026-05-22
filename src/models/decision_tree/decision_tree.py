@@ -211,10 +211,3 @@ class DecisionTree(BaseModel):
             print(f"{prefix}|   RIGHT:")
             self.print_tree(node.right, depth + 2, indent)
         
-        feature_label = f"Feature {node.feature_idx}"
-
-        print(f"{prefix}|--- {feature_label} <= {node.threshold:.4f}")
-        print(f"{prefix}|--- {feature_label} > {node.threshold:.4f}")
-        self.print_tree(node.right, depth + 1, indent)
-        self.print_tree(node.left, depth + 1, indent)
-        

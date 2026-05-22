@@ -1,40 +1,45 @@
-def cost_function(x,y,z,b):
-        m = len(x)
-        cost_sum = 0
+import numpy as np
+from src.models.base import BaseModel
 
-        for i in range(m):
-            f = z * x[i] + b
-            cost = (f - y[i]) ** 2
-            cost_sum += cost
 
-        total_cost = (1 / (2 * m)) * cost_sum
-        return total_cost
+class LinearRegression(BaseModel):
+    """Gradient-descent linear regression for numeric targets."""
 
-def gradient_function(x,y,z,b):
-        m = len(x)
-        dz_sum = 0
-        db_sum = 0
+    def __init__(self, learning_rate=0.01, n_iters=1000, verbose=False):
+        self.learning_rate = learning_rate
+        self.n_iters = n_iters
+        self.verbose = verbose
+        self.w = None
+        self.b = 0.0
 
-        for i in range(m):
-            f = z * x[i] + b
-            dz_sum += (f - y[i]) * x[i]
-            db_sum += (f - y[i])
+    def fit(self, X, y):
+        if hasattr(X, 'toarray'):
+            X = X.toarray()
+        X = np.asarray(X, dtype=np.float32)
+        y = np.asarray(y, dtype=np.float32).flatten()
 
-        dz = (1 / m) * dz_sum
-        db = (1 / m) * db_sum
+        n_samples, n_features = X.shape
+        self.w = np.zeros(n_features, dtype=np.float32)
+        self.b = 0.0
 
-        return dz, db
-    
-def gradient_descent(x, y, alpha, iterations):
-        w = 0
-        b = 0
+        for i in range(self.n_iters):
+            y_hat = X.dot(self.w) + self.b
+            error = y_hat - y
 
-        for i in range(iterations):
-            dz, db = gradient_function(x, y, w, b)
+            dw = (1.0 / n_samples) * X.T.dot(error)
+            db = float((1.0 / n_samples) * np.sum(error))
 
-            w -= alpha * dz
-            b -= alpha * db
+            self.w -= self.learning_rate * dw
+            self.b -= self.learning_rate * db
 
-            # print(f"Iteration {i+1}: Cost = {cost_function(x, y, w, b)}, w = {w}, b = {b}")
+            if self.verbose and i % 100 == 0:
+                loss = float((0.5 / n_samples) * np.sum(error ** 2))
+                print(f"[LinReg] iter={i:04d}, loss={loss:.6f}")
 
-        return w, b
+        return self
+
+    def predict(self, X):
+        if hasattr(X, 'toarray'):
+            X = X.toarray()
+        X = np.asarray(X, dtype=np.float32)
+        return X.dot(self.w) + self.b
