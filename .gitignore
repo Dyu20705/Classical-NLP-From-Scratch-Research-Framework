@@ -1,105 +1,61 @@
-# Byte-compiled / optimized / DLL files
+# Python cache / build artifacts
 __pycache__/
 *.py[cod]
 *$py.class
-
-# C extensions
 *.so
-
-# Distribution / packaging
-.Python
 build/
-develop-eggs/
 dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-pip-wheel-metadata/
-share/python-wheels/
 *.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
-
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
-
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.nox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-*.py,cover
-.hypothesis/
-.pytest_cache/
-
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# IPython
-profile_default/
-ipython_config.py
-
-# pyenv
-.python-version
+.eggs/
+pip-wheel-metadata/
 
 # Virtual environments
 .env
-.venv
+.venv/
 env/
 venv/
 ENV/
 env.bak/
 venv.bak/
 
-# IDE / Editor
+# Test / coverage / typing caches
+.coverage
+.coverage.*
+.pytest_cache/
+.hypothesis/
+.mypy_cache/
+.pyre/
+.tox/
+.nox/
+htmlcov/
+coverage.xml
+
+# Notebook / interactive
+.ipynb_checkpoints/
+profile_default/
+ipython_config.py
+
+# Editor / OS
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 .DS_Store
-.sublime-project
-.sublime-workspace
-*.code-workspace
-
-# OS
 Thumbs.db
+
+# Logs and temporary files
 *.log
+*.tmp
+*.temp
 
-# Data files (keep raw, exclude processed)
-data/processed/*.csv
-data/processed/*.pkl
-data/processed/*.npy
-
-# Results and outputs
+# Generated project outputs
+data/processed/
 results/
+
+# Model / binary artifacts
 *.pkl
 *.joblib
 *.h5
 *.model
 *.checkpoint
-
-# Temporary files
-*.tmp
-*.temp
-*.bak
-*.orig
-
-# Project specific
-.mypy_cache/
-.dmypy.json
-dmypy.json
-.pyre/
