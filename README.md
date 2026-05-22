@@ -1,372 +1,446 @@
-# Sentiment Analysis ML Pipeline
+# Sentiment Analysis From Scratch
 
-[![Python 3.10+](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Status: Active](https://img.shields.io/badge/Status-Active-brightgreen.svg)]()
+[![Python](https://img.shields.io/badge/Python-3.14-blue.svg)](https://www.python.org/)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Tests](https://img.shields.io/badge/Tests-31%20passed-brightgreen.svg)](#testing)
+[![Focus](https://img.shields.io/badge/Focus-NLP%20%7C%20Classical%20ML-informational.svg)](#overview)
 
-A **custom-implemented** sentiment analysis machine learning pipeline featuring hand-crafted feature extraction, text preprocessing, and classification models built from scratch—without reliance on scikit-learn for core algorithms.
+**A research-oriented sentiment analysis repository built around from-scratch machine learning implementations, sparse NLP feature engineering, and reproducible experimentation.**
 
-## 🎯 Project Overview
+This project studies binary sentiment classification on IMDB and Stanford Sentiment Treebank style data using custom implementations of text preprocessing, Bag-of-Words, TF-IDF, Naive Bayes, and Decision Tree. The repository is designed both as an engineering artifact and as a learning environment for understanding how classical NLP pipelines behave beyond high-level library abstractions.
 
-This project demonstrates:
-- **Custom feature extraction**: Bag-of-Words (CountVectorizer) and TF-IDF transformations using sparse matrices
-- **From-scratch classifiers**: Decision Tree and Multinomial Naive Bayes implementations
-- **Memory efficiency**: Sparse matrix operations for high-dimensional text data
-- **Reproducibility**: Stratified train/test splits with fixed random seed (42)
-- **Production-ready evaluation**: Comprehensive metrics including accuracy, confusion matrices, and visualizations
+## Overview
 
-### Key Differentiators
+The repository serves three aligned goals:
 
-✅ **No sklearn for core algorithms** — All feature extraction and base classifiers implemented from first principles  
-✅ **Sparse matrix optimization** — Efficient storage and computation for text features  
-✅ **Numerical stability** — Log-space probability calculations in Naive Bayes to prevent underflow  
-✅ **Data integrity** — Stratified splitting ensures class distribution preservation (no data leakage)  
-✅ **Professional structure** — Modular design with comprehensive documentation and test suite  
+- **Educational goal**: expose the internal mechanics of classical NLP pipelines instead of hiding them behind black-box APIs.
+- **Engineering goal**: organize preprocessing, vectorization, modeling, evaluation, experiments, tests, and reporting as separate modules.
+- **Research goal**: provide a baseline framework for studying sparse text classification, especially the tradeoffs of Naive Bayes and Decision Tree on sentiment data.
 
-## 📋 Quick Links
+The core emphasis of the report and repository is on **Multinomial Naive Bayes** and **Decision Tree**. Additional models such as **KNN**, **Logistic Regression**, **SVM**, **Perceptron**, **Random Forest**, and a simple **Neural Network** are present as secondary experimental implementations.
 
-- [Quick Start](#-quick-start)
-- [Installation](#-installation)
-- [Usage](#-usage)
-- [Project Structure](#-project-structure)
-- [API Reference](#-api-reference)
-- [Experimental Results](#-experimental-results)
-- [Testing](#-testing)
+## Key Features
 
-## 🚀 Quick Start
+- **From-scratch ML implementations** for Naive Bayes, Decision Tree, KNN, SVM, Logistic Regression, Perceptron, Random Forest, and a feed-forward Neural Network.
+- **Custom NLP preprocessing** with HTML cleaning, lowercasing, URL/email removal, tokenization, stopword filtering, and optional numeric removal.
+- **Sparse vectorization stack** with a custom `CountVectorizer` and `TfidfTransformer`.
+- **Evaluation utilities** for accuracy, confusion matrix computation, and visualization.
+- **Experiment entrypoints** through `main.py` and a YAML-configured baseline runner under `experiments/`.
+- **Notebook workflow** for exploratory analysis and teaching-oriented experimentation in `notebook/exploration.ipynb`.
+- **Testing support** across preprocessing, feature extraction, models, evaluation, and utilities.
+- **Academic reporting workflow** centered on `report/BaoCaoBaiTap.md` and the planned figure workflow in `report/images/`.
+- **Reproducibility primitives** including deterministic train/test splitting and structured output directories.
 
-### Run the Full Pipeline
+## Why This Project Matters
 
-```bash
-# 1. Install dependencies
-pip install -r requirements.txt
+Classical sentiment analysis remains valuable because sparse text classification still teaches the core engineering pressures of NLP:
 
-# 2. Run pipeline
-python main.py
+- **Understanding internals matters**: Laplace smoothing, entropy, information gain, TF-IDF normalization, and stratified splitting become much clearer when implemented directly.
+- **Sparse NLP is not trivial**: large vocabularies, document sparsity, and feature dimensionality shape both performance and memory use.
+- **Black-box abstraction hides tradeoffs**: this repository makes those tradeoffs visible, especially where current implementations still convert sparse matrices to dense arrays inside some models.
+- **Educational value is high**: the project is suitable for coursework, debugging practice, algorithm study, and baseline experimentation before moving to embedding-based or transformer-based systems.
+- **Engineering decisions remain visible**: modular code, explicit preprocessing, configurable experiments, and tests make the repository easier to audit and extend.
+
+## Architecture Overview
+
+The repository is organized around a standard NLP pipeline:
+
+**Raw text -> preprocessing -> vectorization -> model training -> evaluation -> reporting**
+
+### Component Roles
+
+- **Preprocessing**: normalize raw text and enforce consistent token-level inputs.
+- **Feature extraction**: convert cleaned text into sparse document-term representations.
+- **Models**: train classical ML classifiers implemented in NumPy/SciPy style code.
+- **Evaluation**: compute metrics and generate plots for error analysis.
+- **Experiments**: run scripted baselines and write reproducible artifacts.
+- **Reports and notebooks**: support exploratory work and academic writeups.
+
+### Repository Structure
+
+```text
+ml-models-sentiment/
+├── main.py
+├── requirements.txt
+├── pytest.ini
+├── data/
+│   ├── raw/
+│   │   ├── imdb/
+│   │   └── sst/
+│   └── processed/
+├── experiments/
+│   ├── config.yaml
+│   ├── config.old.yaml
+│   ├── run_baseline.py
+│   └── run_baseline.old.py
+├── notebook/
+│   ├── exploration.ipynb
+│   ├── exploration.main.ipynb
+│   └── simple-mnist-nn-from-scratch-numpy-no-tf-keras.ipynb
+├── report/
+│   ├── BaoCaoBaiTap.md
+│   ├── IMAGES_GUIDE.md
+│   └── images/
+├── src/
+│   ├── evaluation/
+│   ├── feature_extraction/
+│   ├── models/
+│   │   ├── decision_tree/
+│   │   ├── knn/
+│   │   ├── naive_bayes/
+│   │   ├── neural_network/
+│   │   ├── pca/
+│   │   ├── perceptron/
+│   │   ├── regression/
+│   │   └── svms/
+│   ├── preprocessing/
+│   └── utils/
+└── tests/
+    ├── evaluation/
+    ├── feature_extraction/
+    ├── models/
+    ├── preprocessing/
+    └── utils/
 ```
 
-**Expected Output:** Complete sentiment analysis pipeline with model training, evaluation, and visualizations.
+Some folders also keep `*.old.*` snapshots as reference material. They are preserved in the repository but excluded from the active test collection.
 
-## 📦 Installation
+## Datasets
 
-### Requirements
+The repository works with two sentiment datasets already present under `data/raw/`:
 
-- **Python 3.10+**
-- **NumPy** ≥ 1.21.0
-- **SciPy** ≥ 1.7.0
-- **Pandas** ≥ 1.3.0
-- **Matplotlib** ≥ 3.4.0
-- **Seaborn** ≥ 0.11.0
+- **IMDB**: movie review sentiment data stored in `data/raw/imdb/IMDB_dataset.csv`.
+- **SST-style dataset**: sentence-level sentiment data stored in `data/raw/sst/train.csv`, with companion `test.csv` and `sample_submission.csv`.
 
-### Setup
+### Task Framing
 
-```bash
-# Clone repository
-git clone <repository-url>
-cd a-sentiment
+- Primary framing: **binary sentiment classification**
+- Input type: raw review or sentence text
+- Output type: binary polarity labels
 
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
+### Dataset Setup
 
-# Install dependencies
-pip install -r requirements.txt
-```
+There is **no automated dataset download script** in the repository. The current workflow assumes the CSV files already exist under `data/raw/`, which is the case for this codebase snapshot.
 
-## 💻 Usage
+### Preprocessing Goals
 
-### Basic Pipeline Example
+The preprocessing layer is designed to:
 
-```python
-from src import (
-    CountVectorizer, TfidfTransformer,
-    NaiveBayes, DecisionTree,
-    train_test_split, accuracy, confusion_matrix
-)
-from src import TextProcessor
+- remove HTML and markup artifacts
+- reduce casing noise
+- strip URLs and emails
+- optionally remove numbers
+- tokenize consistently
+- optionally remove stopwords
 
-# 1. Load and preprocess data
-processor = TextProcessor(remove_stopwords=False)
-texts = np.array(["Great movie!", "Terrible film", ...])
-labels = np.array([1, 0, ...])
+These choices are suitable for classical sparse models, although they also surface the usual tradeoff between vocabulary compression and loss of nuanced sentiment cues.
 
-processed = [' '.join(processor.process(text)) for text in texts]
+## ML Pipeline
 
-# 2. Split data (stratified)
-X_train_text, X_test_text, y_train, y_test = train_test_split(
-    np.array(processed), labels,
-    test_size=0.2, random_state=42, stratify=True
-)
+The implemented workflow is:
 
-# 3. Extract features
-vectorizer = CountVectorizer(max_features=1000)
-X_train = vectorizer.fit_transform(X_train_text)
-X_test = vectorizer.transform(X_test_text)
+**Raw Text -> Cleaning -> Tokenization -> Stopword Removal -> Vectorization -> Model Training -> Evaluation**
 
-# 4. Train model
-nb = NaiveBayes(alpha=1.0)
-nb.fit(X_train, y_train)
+### Count Vectorizer
 
-# 5. Evaluate
-y_pred = nb.predict(X_test)
-acc = accuracy(y_test, y_pred)
-cm, classes = confusion_matrix(y_test, y_pred)
+`src/feature_extraction/count_vectorizer.py` builds a vocabulary from training data and returns a sparse CSR matrix of token counts. It supports:
 
-print(f"Accuracy: {acc:.4f}")
-print(f"Confusion Matrix:\n{cm}")
-```
+- lowercasing
+- configurable `ngram_range`
+- configurable `max_features`
 
-### Feature Extraction
+### TF-IDF
 
-#### Bag-of-Words
+`src/feature_extraction/tfidf_vectorizer.py` transforms sparse count matrices into TF-IDF representations with:
 
-```python
-from src import CountVectorizer
+- smoothed IDF
+- column-wise weighting
+- row-wise L2 normalization
 
-cv = CountVectorizer(
-    lowercase=True,
-    ngram_range=(1, 1),  # Unigrams only
-    max_features=1000
-)
-X = cv.fit_transform(texts)  # Sparse matrix (n_samples, 1000)
-```
+### Sparse Feature Space Challenges
 
-#### TF-IDF
+This repository makes the classical NLP tradeoff explicit:
 
-```python
-from src import TfidfTransformer
+- vectorizers produce **memory-efficient sparse matrices**
+- some downstream custom models still call `toarray()`
+- the code is therefore educationally transparent, but not yet fully optimized for very large vocabularies or corpora
 
-tfidf = TfidfTransformer()
-X_tfidf = tfidf.fit_transform(X)
-```
+That tension is central to the project and is discussed directly in the report.
 
-### Classification Models
+## Model Implementations
+
+### Primary Models
 
 #### Naive Bayes
 
-```python
-from src import NaiveBayes
+`src/models/naive_bayes/naive_bayes.py` implements a **Multinomial Naive Bayes** classifier from scratch using:
 
-nb = NaiveBayes(alpha=1.0)  # Laplace smoothing
-nb.fit(X_train, y_train)
-y_pred = nb.predict(X_test)
-y_proba = nb.predict_proba(X_test)  # Probability estimates
-```
+- class prior estimation
+- per-class feature likelihoods
+- **Laplace smoothing** via `alpha`
+- **log-space posterior computation** for numerical stability
+
+This is the main probabilistic baseline in the repository and one of the two central models in the report.
 
 #### Decision Tree
 
-```python
-from src import DecisionTree
+`src/models/decision_tree/decision_tree.py` implements a classification tree using:
 
-dt = DecisionTree(max_depth=4, min_samples_split=2)
-dt.fit(X_train, y_train)
-y_pred = dt.predict(X_test)
-```
+- **entropy** as the impurity function
+- **information gain** for split selection
+- `max_depth`
+- `min_samples_split`
 
-### Evaluation & Visualization
+This is the main rule-based baseline in the repository and the second central model in the report.
 
-```python
-from src.evaluation import accuracy, confusion_matrix
-from src.evaluation.visualization import MetricsVisualizer
+### Secondary Implementations
 
-# Metrics
-acc = accuracy(y_test, y_pred)
-cm, classes = confusion_matrix(y_test, y_pred)
+The codebase also includes additional experimental models:
 
-# Visualizations
-MetricsVisualizer.plot_confusion_matrix(cm, classes)
-MetricsVisualizer.plot_roc_style_metrics(y_test, y_pred)
+- `src/models/knn/knn.py`
+- `src/models/regression/logistic.py`
+- `src/models/regression/linear.py`
+- `src/models/svms/svm.py`
+- `src/models/perceptron/perceptron.py`
+- `src/models/decision_tree/random_forest.py`
+- `src/models/neural_network/neural_network.py`
+- `src/models/pca/pca.py`
 
-import matplotlib.pyplot as plt
-plt.show()
-```
+These broaden the repository technically, but they are not the primary focus of the report.
 
-## 📁 Project Structure
+## Experiments
 
-```
-a-sentiment/
-├── main.py                              # Full pipeline demo
-├── requirements.txt                     # Dependencies
-├── README.md                            # This file
-├── .gitignore                           # Git ignore rules
-│
-├── src/                                 # Main package
-│   ├── __init__.py                      # Module exports
-│   ├── feature_extraction/              # Feature extraction
-│   │   ├── count_vectorizer.py          # Bag-of-words
-│   │   ├── tfidf_vectorizer.py          # TF-IDF transformer
-│   │   └── vocabulary.py                # Word↔index mappings
-│   │
-│   ├── models/                          # Classification models
-│   │   ├── base.py                      # Abstract interface
-│   │   ├── decision_tree/
-│   │   │   ├── decision_tree.py         # Decision tree classifier
-│   │   │   └── decision_tree_old.py     # Backup
-│   │   └── naive_bayes/
-│   │       ├── naive_bayes.py           # Naive Bayes classifier
-│   │       └── naive_bayes_old.py       # Backup
-│   │
-│   ├── preprocessing/
-│   │   └── text_processor.py            # Text cleaning & tokenization
-│   │
-│   ├── evaluation/
-│   │   ├── accuracy.py                  # Accuracy metric
-│   │   ├── confusion_matrix.py          # Confusion matrix
-│   │   └── visualization.py             # Matplotlib utilities
-│   │
-│   └── utils/
-│       └── helper.py                    # train_test_split, etc.
-│
-├── tests/
-│   └── test_pipeline.py                 # Test suite
-│
-├── data/
-│   ├── raw/                             # Raw datasets
-│   └── processed/                       # Processed data
-│
-├── experiments/
-│   ├── config.yaml                      # Experiment config
-│   └── run_baseline.py                  # Baseline runner
-│
-└── notebook/
-    └── exploration.ipynb                # Data exploration
-```
+The repository contains two practical experiment entrypoints:
 
-## 🔌 API Reference
+- **`main.py`**: a command-line baseline runner for IMDB or SST-style CSV data
+- **`experiments/run_baseline.py`**: a YAML-configured experiment script paired with `experiments/config.yaml`
 
-### CountVectorizer
+### Experiment Workflow
 
-```python
-cv = CountVectorizer(
-    lowercase=True,
-    ngram_range=(1, 1),
-    max_features=None
-)
-X = cv.fit_transform(texts)              # Sparse matrix
-X_test = cv.transform(texts_test)        # Transform new data
-vocab_size = len(cv.vocabulary_)         # Vocabulary size
-```
+The code supports the following baseline workflow:
 
-### TfidfTransformer
+1. load raw CSV data
+2. infer or override text/label columns
+3. preprocess text with `TextProcessor`
+4. split train/test with stratification
+5. build Count or TF-IDF features
+6. train one or more models
+7. compute metrics
+8. save artifacts under `results/`
 
-```python
-tfidf = TfidfTransformer()
-X_tfidf = tfidf.fit_transform(X_counts)
-X_test_tfidf = tfidf.transform(X_test_counts)
-```
+### Metrics
 
-### NaiveBayes
+The evaluation stack explicitly works with:
 
-```python
-nb = NaiveBayes(alpha=1.0)
-nb.fit(X_train, y_train)
-y_pred = nb.predict(X_test)
-y_proba = nb.predict_proba(X_test)
-```
+- Accuracy
+- Precision
+- Recall
+- F1-score
+- Confusion Matrix
 
-### DecisionTree
+The CLI baseline in `main.py` computes macro precision/recall/F1 and writes structured outputs such as:
 
-```python
-dt = DecisionTree(max_depth=4, min_samples_split=2)
-dt.fit(X_train, y_train)
-y_pred = dt.predict(X_test)
-```
+- `metrics.json`
+- `predictions.csv`
+- optional figure exports
 
-### TextProcessor
+## Visualization
 
-```python
-processor = TextProcessor(
-    remove_stopwords=False,
-    remove_numbers=True
-)
-clean_text = processor.clean(text)
-tokens = processor.tokenize(text)
-processed = processor.process(text)
-```
+`src/evaluation/visualization.py` provides plotting helpers for:
 
-### Utilities
+- confusion matrices
+- model accuracy comparison
+- per-class metric charts
+- class distribution views
+- prediction distribution views
 
-```python
-from src.utils import train_test_split
-from src.evaluation import accuracy, confusion_matrix
+### Report Images
 
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=42, stratify=True
-)
-acc = accuracy(y_test, y_pred)
-cm, classes = confusion_matrix(y_test, y_pred)
-```
+The repository includes a reporting workflow in `report/IMAGES_GUIDE.md` that standardizes:
 
-## 📊 Experimental Results
+- figure naming
+- figure storage under `report/images/`
+- markdown integration into the report
 
-| Model | Features | Accuracy |
-|-------|----------|----------|
-| Naive Bayes | Raw Counts | 1.0000 |
-| Decision Tree | Raw Counts | 1.0000 |
-| Decision Tree | TF-IDF | 1.0000 |
+At the moment, `report/images/` is present but empty, which is consistent with an in-progress reporting workflow rather than a fully curated final artifact set.
 
-**Dataset**: 12 sentiment-labeled reviews (toy dataset)
+### Notebook Visualizations
 
-## 🧪 Testing
+The notebook adds a more exploratory layer with:
+
+- class distribution plots
+- token-length histograms
+- sparsity views
+- confusion matrix visualizations
+- feature inspection for teaching and debugging
+
+## Notebook
+
+The main notebook is `notebook/exploration.ipynb`.
+
+Its role is not only to show outputs, but to document reasoning:
+
+- dataset inspection for IMDB and SST-style data
+- preprocessing examples before and after cleaning
+- feature extraction diagnostics
+- model workflow demonstrations
+- guided sections for manual practice on Naive Bayes and Decision Tree
+
+This makes the notebook useful for:
+
+- exploratory analysis
+- debugging preprocessing
+- classroom demonstration
+- research-style experimentation
+
+## Testing
+
+The repository includes a meaningful `pytest` suite and currently passes:
+
+- **31 tests passed**
+
+### Test Coverage Areas
+
+- **Preprocessing tests**: text cleaning and CSV preprocessing pipeline behavior
+- **Feature extraction tests**: CountVectorizer, TF-IDF, and vocabulary logic
+- **Model tests**: Naive Bayes, Decision Tree, KNN, SVM, regression, Random Forest, and Neural Network smoke coverage
+- **Evaluation tests**: accuracy, confusion matrix, and visualization helpers
+- **Utility tests**: stratified `train_test_split`
+
+### Test Layout
 
 ```bash
-# Run all tests
-pytest tests/ -v
-
-# Run specific test
-pytest tests/test_pipeline.py -v
-
-# Coverage report
-pytest tests/ --cov=src --cov-report=html
+tests/
+├── evaluation/
+├── feature_extraction/
+├── models/
+├── preprocessing/
+└── utils/
 ```
 
-## 🔬 Methodology
+This test organization materially improves the engineering quality of the repository: models are not treated as notebook-only experiments, but as modules with executable expectations.
 
-### Feature Extraction
-1. Text preprocessing (HTML removal, lowercasing)
-2. Tokenization (whitespace-based)
-3. Vocabulary building (word→index mapping)
-4. Bag-of-Words (sparse count matrix)
-5. TF-IDF weighting (optional)
+## Installation
 
-### Classification
-- **Naive Bayes**: Multinomial with Laplace smoothing
-- **Decision Tree**: Information gain-based splitting
+### 1. Clone the repository
 
-### Data Handling
-- Stratified train/test split (80/20)
-- Sparse matrix format (CSR)
-- Fixed random seed (42) for reproducibility
+```bash
+git clone <your-repository-url>
+cd ml-models-sentiment
+```
 
-## 📝 Key Features
+### 2. Create and activate a virtual environment
 
-✅ **No sklearn for core algorithms** - Pure NumPy/SciPy  
-✅ **Sparse matrices** - Memory efficient text representation  
-✅ **Log-space computation** - Numerical stability  
-✅ **Stratified splitting** - No data leakage  
-✅ **Comprehensive tests** - 10+ test cases  
-✅ **Visualization tools** - matplotlib/seaborn integration  
-✅ **Professional documentation** - Docstrings and examples  
+**Windows PowerShell**
 
-## 🤝 Contributing
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+```
 
-Contributions welcome! Please:
-1. Fork repository
-2. Create feature branch
-3. Make changes with tests
-4. Submit pull request
+**macOS / Linux**
 
-## 📄 License
+```bash
+python -m venv .venv
+source .venv/bin/activate
+```
 
-MIT License - see LICENSE file for details
+### 3. Install dependencies
 
-## 📚 Documentation
+```bash
+pip install -r requirements.txt
+```
 
-- `docs/IDEA.md` - Project ideas
-- `experiments/config.yaml` - Experiment configs
-- `notebook/exploration.ipynb` - Data exploration
+### 4. Run the main baseline
 
----
+```bash
+python main.py --dataset sst --limit 300 --models naive_bayes decision_tree
+```
 
-**Status**: ✅ Active Development  
-**Last Updated**: 2026
+### 5. Run tests
+
+```bash
+pytest -q
+```
+
+### 6. Launch the notebook
+
+```bash
+jupyter notebook notebook/exploration.ipynb
+```
+
+## Results
+
+The repository does not yet present a single canonical benchmark table for the full datasets. However, executable baseline outputs do exist.
+
+### Example Output
+
+The following numbers are from a **small smoke run** of:
+
+```bash
+python main.py --dataset sst --limit 300 --models naive_bayes decision_tree --no-plots
+```
+
+| Run Type | Dataset Slice | Model | Accuracy | Macro Precision | Macro Recall | Macro F1 |
+|---|---:|---|---:|---:|---:|---:|
+| Example smoke run | SST, first 300 rows | Naive Bayes | 0.6066 | 0.5924 | 0.5731 | 0.5643 |
+| Example smoke run | SST, first 300 rows | Decision Tree | 0.6066 | 0.6144 | 0.5533 | 0.5107 |
+
+These numbers should be interpreted as **sanity-check outputs**, not as final benchmark claims.
+
+## Report
+
+The academic report lives in:
+
+- `report/BaoCaoBaiTap.md`
+
+Its current emphasis is aligned with the repository's primary research focus:
+
+- Naive Bayes
+- Decision Tree
+- sparse NLP feature engineering
+- engineering tradeoffs in from-scratch ML
+
+### Reporting Workflow
+
+- `report/BaoCaoBaiTap.md` holds the narrative report
+- `report/IMAGES_GUIDE.md` defines the figure-generation convention
+- `report/images/` is the intended destination for report-ready visual assets
+
+This separation between code, experiment artifacts, and academic writeup is a good sign of maintainability: the repository is not only trying to run models, but also to support documentation and communication of results.
+
+## Engineering Quality
+
+Several qualities make this repository stronger than a minimal classroom script:
+
+- **Modularity**: preprocessing, vectorization, models, evaluation, and utilities are separated into dedicated modules.
+- **Reproducibility**: deterministic train/test split settings and artifact output directories are built into the workflow.
+- **Separation of concerns**: notebooks, scripts, source modules, tests, and report materials are not collapsed into a single file.
+- **Maintainability**: tests exist across multiple subsystems, and backup/reference files are preserved without being part of active test collection.
+- **Extensibility**: the repository already accommodates multiple model families and both script-based and notebook-based experimentation.
+
+This structure reads well for recruiters and maintainers because it shows that the project is not only about model accuracy, but about how machine learning code is organized, tested, and communicated.
+
+## Future Work
+
+Several next steps follow naturally from the current codebase:
+
+- keep sparse representations all the way through model training where possible
+- strengthen the experiment runner and benchmark reporting workflow
+- add more formal hyperparameter sweeps
+- integrate figure export directly into the report pipeline
+- extend ensemble experiments such as **Random Forest**
+- explore dense representations and embeddings
+- add modern baselines such as **Transformer** or **BERT**-based sentiment classifiers
+- improve scaling and optimization for larger corpora
+
+## Repository Status
+
+At the current snapshot, the repository is best understood as:
+
+- a **working from-scratch NLP/ML project**
+- a **serious educational baseline**
+- a **research-style sentiment analysis codebase**
+- an **engineering portfolio artifact in active refinement**
+
+It is already strong as a study repository for classical NLP pipelines, and it becomes even more valuable because its limitations are visible rather than hidden.
