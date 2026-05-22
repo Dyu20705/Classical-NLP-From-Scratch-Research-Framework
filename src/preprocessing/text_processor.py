@@ -10,7 +10,6 @@ TextProcessor : Text cleaning, tokenization, and normalization
 """
 
 import re
-import string
 
 
 class TextProcessor:
@@ -49,7 +48,7 @@ class TextProcessor:
         'who', 'when', 'where', 'why', 'how'
     }
     
-    def __init__(self, remove_stopwords=False, remove_numbers=True):
+    def __init__(self, remove_stopwords=False, remove_numbers=True, stemmer=None):
         """
         Initialize TextProcessor.
         
@@ -60,8 +59,10 @@ class TextProcessor:
         remove_numbers : bool, default=True
             If True, remove numeric characters
         """
+        # store flag separately from method name to avoid name collision
         self.remove_stopwords = remove_stopwords
         self.remove_numbers = remove_numbers
+        self.stemmer = stemmer
 
     def clean(self, text):
         """
@@ -90,6 +91,12 @@ class TextProcessor:
         >>> processor.clean(text)
         'hello world'
         """
+        if text is None:
+            return ''
+
+        if not isinstance(text, str):
+            text = str(text)
+
         # Remove HTML tags
         text = re.sub(r'<.*?>', '', text)
         
@@ -106,8 +113,10 @@ class TextProcessor:
         if self.remove_numbers:
             text = re.sub(r'\d+', '', text)
         
-        # Remove special characters (keep only letters, spaces, and apostrophes)
-        text = re.sub(r"[^a-zA-Z\s']", '', text)
+        # Remove special characters while preserving unicode letters and apostrophes.
+        text = re.sub(r"[^\w\s']", ' ', text, flags=re.UNICODE)
+        # Remove standalone underscores introduced by \w
+        text = re.sub(r'_+', ' ', text)
         
         # Remove extra whitespace
         text = ' '.join(text.split())
@@ -138,7 +147,7 @@ class TextProcessor:
         """
         return text.split()
     
-    def remove_stopwords(self, tokens):
+    def remove_stopwords_tokens(self, tokens):
         """
         Remove stopwords from token list.
         
@@ -193,10 +202,14 @@ class TextProcessor:
         # Tokenize
         tokens = self.tokenize(text)
         
-        # Remove stopwords if enabled
+        # Remove stopwords if enabled (call the token-filtering method)
         if self.remove_stopwords:
-            tokens = self.remove_stopwords(tokens)
+            tokens = self.remove_stopwords_tokens(tokens)
         
+        # Optional stemming/lemmatization hook
+        if self.stemmer is not None:
+            tokens = [self.stemmer(token) for token in tokens]
+
         # Remove empty tokens
         tokens = [token for token in tokens if token]
         
