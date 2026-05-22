@@ -434,6 +434,10 @@ Several next steps follow naturally from the current codebase:
 - add modern baselines such as **Transformer** or **BERT**-based sentiment classifiers
 - improve scaling and optimization for larger corpora
 
+## License
+
+This repository is released under the **MIT License**. See [LICENSE](LICENSE).
+
 ## Repository Status
 
 At the current snapshot, the repository is best understood as:
