@@ -64,6 +64,17 @@ class TextProcessor:
         self.remove_numbers = remove_numbers
         self.stemmer = stemmer
 
+    def _normalize_text_input(self, text):
+        if isinstance(text, bytes):
+            return text.decode('utf-8', errors='ignore')
+        if isinstance(text, str):
+            text = text.strip()
+            text = re.sub(r"^b\s*(['\"])", r"\1", text)
+            text = re.sub(r"^b\s+", "", text)
+            if (text.startswith("b'") and text.endswith("'")) or (text.startswith('b"') and text.endswith('"')):
+                return text[2:-1]
+        return text
+
     def clean(self, text):
         """
         Clean text by removing HTML tags, special characters, etc.
@@ -93,6 +104,8 @@ class TextProcessor:
         """
         if text is None:
             return ''
+
+        text = self._normalize_text_input(text)
 
         if not isinstance(text, str):
             text = str(text)

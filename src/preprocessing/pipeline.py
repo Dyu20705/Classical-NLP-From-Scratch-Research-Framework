@@ -25,7 +25,20 @@ from src.preprocessing.text_processor import TextProcessor
 CSV_CHUNKSIZE = 10000
 
 
+def _normalize_text_input(text):
+    if isinstance(text, bytes):
+        return text.decode('utf-8', errors='ignore')
+    if isinstance(text, str):
+        text = text.strip()
+        text = re.sub(r"^b\s*(['\"])", r"\1", text)
+        text = re.sub(r"^b\s+", "", text)
+        if (text.startswith("b'") and text.endswith("'")) or (text.startswith('b"') and text.endswith('"')):
+            return text[2:-1]
+    return text
+
+
 def _clean_text_basic(text, remove_numbers=True):
+    text = _normalize_text_input(text)
     if not isinstance(text, str):
         return ''
 
@@ -97,9 +110,12 @@ def process_csv_to_clean(input_path,
     csv_out = output_dir / f"{base}_clean.csv"
     jsonl_out = output_dir / f"{base}_clean.jsonl"
 
-    if csv_out.exists() and jsonl_out.exists() and not force:
-        print(f"Processed files already exist for {input_path}. Use force=True to overwrite.")
-        return str(csv_out), str(jsonl_out)
+    if csv_out.exists() and jsonl_out.exists():
+        if not force:
+            print(f"Processed files already exist for {input_path}. Use force=True to overwrite.")
+            return str(csv_out), str(jsonl_out)
+        csv_out.unlink()
+        jsonl_out.unlink()
 
     processor = TextProcessor(remove_stopwords=remove_stopwords, remove_numbers=remove_numbers)
 
