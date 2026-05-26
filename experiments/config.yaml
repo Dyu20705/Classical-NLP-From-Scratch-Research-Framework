@@ -1,8 +1,4 @@
-# Experiment configuration for baseline runs
-
 dataset:
-  # Path to CSV file containing text and label columns
-  # Can be absolute or repository-relative
   path: data/raw/sst/train.csv
   text_col: sentence
   label_col: target
@@ -11,10 +7,8 @@ dataset:
 preprocessing:
   remove_stopwords: true
   remove_numbers: true
-  stemming: false
 
 vectorizer:
-  type: tfidf
   lowercase: true
   ngram_range: [1, 1]
   max_features: 10000
@@ -33,9 +27,3 @@ evaluation:
 
 output:
   results_dir: results/experiments
-  metrics_dir: results/experiments/metrics
-  logs_dir: results/experiments/logs
-  predictions_dir: results/experiments/predictions
-  figures_dir: results/experiments/figures
-  save_csv_predictions: true
-  save_confusion: true

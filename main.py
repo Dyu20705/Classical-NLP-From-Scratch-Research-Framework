@@ -1,15 +1,3 @@
-"""
-Command-line entry point for the sentiment analysis project.
-
-This script provides a reproducible baseline workflow:
-1. load a dataset from ``data/raw``
-2. preprocess text with the project text processor
-3. split train/test with optional stratification
-4. vectorize with CountVectorizer or TF-IDF
-5. train one or more repository models
-6. report metrics and optionally save visualizations
-"""
-
 from __future__ import annotations
 
 import argparse
@@ -18,7 +6,6 @@ import json
 import sys
 from pathlib import Path
 
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
@@ -28,14 +15,9 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from src.evaluation.accuracy import accuracy
 from src.evaluation.confusion_matrix import confusion_matrix
-from src.evaluation.visualization import MetricsVisualizer
 from src.feature_extraction.count_vectorizer import CountVectorizer
-from src.feature_extraction.tfidf_vectorizer import TfidfTransformer
 from src.models.decision_tree.decision_tree import DecisionTree
-from src.models.knn.knn import KNN
 from src.models.naive_bayes.naive_bayes import NaiveBayes
-from src.models.regression.logistic import LogisticRegression
-from src.models.svms.svm import SVM
 from src.preprocessing.text_processor import TextProcessor
 from src.utils.helper import train_test_split
 
@@ -44,95 +26,19 @@ RESULTS_ROOT = PROJECT_ROOT / "results"
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Run a sentiment analysis baseline.")
-    parser.add_argument(
-        "--dataset",
-        choices=["imdb", "sst"],
-        default="sst",
-        help="Dataset under data/raw to use.",
-    )
-    parser.add_argument(
-        "--dataset-path",
-        type=str,
-        default=None,
-        help="Optional explicit CSV path. Overrides --dataset.",
-    )
-    parser.add_argument(
-        "--text-col",
-        type=str,
-        default=None,
-        help="Optional text column override.",
-    )
-    parser.add_argument(
-        "--label-col",
-        type=str,
-        default=None,
-        help="Optional label column override.",
-    )
-    parser.add_argument(
-        "--limit",
-        type=int,
-        default=5000,
-        help="Maximum number of rows to use. Use 0 or a negative value for all rows.",
-    )
-    parser.add_argument(
-        "--vectorizer",
-        choices=["count", "tfidf"],
-        default="tfidf",
-        help="Feature representation.",
-    )
-    parser.add_argument(
-        "--ngram-max",
-        type=int,
-        default=1,
-        help="Upper bound of the n-gram range. Lower bound is fixed at 1.",
-    )
-    parser.add_argument(
-        "--max-features",
-        type=int,
-        default=5000,
-        help="Maximum vocabulary size.",
-    )
-    parser.add_argument(
-        "--remove-stopwords",
-        action="store_true",
-        help="Remove stopwords during preprocessing.",
-    )
-    parser.add_argument(
-        "--keep-numbers",
-        action="store_true",
-        help="Keep numeric characters during preprocessing.",
-    )
-    parser.add_argument(
-        "--test-size",
-        type=float,
-        default=0.2,
-        help="Held-out test ratio.",
-    )
-    parser.add_argument(
-        "--random-state",
-        type=int,
-        default=42,
-        help="Random seed for sampling and split.",
-    )
-    parser.add_argument(
-        "--models",
-        nargs="+",
-        choices=["naive_bayes", "decision_tree", "knn", "logistic_regression", "svm"],
-        default=["naive_bayes", "decision_tree"],
-        help="Models to train.",
-    )
-    parser.add_argument(
-        "--save-dir",
-        type=str,
-        default=str(RESULTS_ROOT / "cli"),
-        help="Directory for metrics and figures.",
-    )
-    parser.add_argument(
-        "--no-plots",
-        action="store_true",
-        help="Skip figure generation.",
-    )
+    parser = argparse.ArgumentParser(description="Run the sentiment baseline.")
+    parser.add_argument("--dataset", choices=["imdb", "sst"], default="sst")
+    parser.add_argument("--dataset-path", type=str, default=None)
+    parser.add_argument("--text-col", type=str, default=None)
+    parser.add_argument("--label-col", type=str, default=None)
+    parser.add_argument("--limit", type=int, default=5000)
+    parser.add_argument("--ngram-max", type=int, default=1)
+    parser.add_argument("--max-features", type=int, default=5000)
+    parser.add_argument("--remove-stopwords", action="store_true")
+    parser.add_argument("--keep-numbers", action="store_true")
+    parser.add_argument("--test-size", type=float, default=0.2)
+    parser.add_argument("--random-state", type=int, default=42)
+    parser.add_argument("--save-dir", type=str, default=str(RESULTS_ROOT / "cli"))
     return parser.parse_args()
 
 
@@ -140,7 +46,7 @@ def decode_text(value):
     if pd.isna(value):
         return ""
 
-    text = str(value)
+    text = str(value).strip()
     if text.startswith(("b'", 'b"')):
         try:
             decoded = ast.literal_eval(text)
@@ -156,7 +62,6 @@ def infer_text_label_columns(df):
     lower_map = {column.lower(): column for column in df.columns}
     text_candidates = ["sentence", "review", "text", "content", "comment"]
     label_candidates = ["target", "label", "sentiment", "polarity", "class"]
-
     text_col = next((lower_map[name] for name in text_candidates if name in lower_map), df.columns[0])
     label_col = next((lower_map[name] for name in label_candidates if name in lower_map), df.columns[-1])
     return text_col, label_col
@@ -165,32 +70,23 @@ def infer_text_label_columns(df):
 def resolve_dataset_path(args):
     if args.dataset_path:
         return Path(args.dataset_path).resolve()
-
     if args.dataset == "imdb":
         candidates = sorted((DATA_ROOT / "imdb").glob("*.csv"))
-        if not candidates:
-            # Fall back to the SST train split if available, with a clear warning.
-            fallback = DATA_ROOT / "sst" / "train.csv"
-            if fallback.exists():
-                print(
-                    f"Warning: no CSV files found in {DATA_ROOT / 'imdb'}. "
-                    f"Falling back to {fallback}",
-                    file=sys.stderr,
-                )
-                return fallback
-            raise FileNotFoundError(f"No CSV file found in {DATA_ROOT / 'imdb'}")
-        return candidates[0]
-
+        if candidates:
+            return candidates[0]
+        fallback = DATA_ROOT / "sst" / "train.csv"
+        if fallback.exists():
+            return fallback
+        raise FileNotFoundError(f"No CSV file found in {DATA_ROOT / 'imdb'}")
     return DATA_ROOT / "sst" / "train.csv"
 
 
 def normalize_labels(series):
     raw = series.copy()
-
     if pd.api.types.is_numeric_dtype(raw):
         unique_values = sorted(pd.unique(raw.dropna()))
         if set(unique_values).issubset({0, 1}):
-            return raw.astype(int).to_numpy(), {0: 0, 1: 1}
+            return raw.astype(int).to_numpy(), {0: "negative", 1: "positive"}
 
     normalized = raw.astype(str).str.strip().str.lower()
     positive_aliases = {"1", "positive", "pos", "true", "yes"}
@@ -201,18 +97,14 @@ def normalize_labels(series):
         return encoded.astype(int).to_numpy(), {0: "negative", 1: "positive"}
 
     codes, uniques = pd.factorize(raw)
-    return codes.astype(int), {idx: label for idx, label in enumerate(uniques.tolist())}
+    lookup = {idx: str(label) for idx, label in enumerate(uniques.tolist())}
+    return codes.astype(int), lookup
 
 
 def load_dataset(args):
     dataset_path = resolve_dataset_path(args)
     try:
         df = pd.read_csv(dataset_path)
-    except FileNotFoundError:
-        raise FileNotFoundError(
-            f"Dataset file not found: {dataset_path}. "
-            "Pass an explicit path with --dataset-path or place files under data/raw/."
-        )
     except Exception as exc:
         raise RuntimeError(f"Failed to read dataset at {dataset_path}: {exc}") from exc
 
@@ -247,56 +139,16 @@ def load_dataset(args):
 
 
 def preprocess_texts(texts, remove_stopwords=False, remove_numbers=True):
-    processor = TextProcessor(
-        remove_stopwords=remove_stopwords,
-        remove_numbers=remove_numbers,
-    )
+    processor = TextProcessor(remove_stopwords=remove_stopwords, remove_numbers=remove_numbers)
     processed = [" ".join(processor.process(text)) for text in texts]
     return processed, processor
 
 
-def build_features(train_texts, test_texts, vectorizer_type, ngram_max, max_features):
-    vectorizer = CountVectorizer(
-        lowercase=True,
-        ngram_range=(1, ngram_max),
-        max_features=max_features,
-    )
-
-    X_train_counts = vectorizer.fit_transform(train_texts)
-    X_test_counts = vectorizer.transform(test_texts)
-
-    features = {
-        "vectorizer": vectorizer,
-        "X_train_counts": X_train_counts,
-        "X_test_counts": X_test_counts,
-        "representation": "count",
-    }
-
-    if vectorizer_type == "tfidf":
-        transformer = TfidfTransformer()
-        features["tfidf_transformer"] = transformer
-        features["X_train"] = transformer.fit_transform(X_train_counts)
-        features["X_test"] = transformer.transform(X_test_counts)
-        features["representation"] = "tfidf"
-    else:
-        features["X_train"] = X_train_counts
-        features["X_test"] = X_test_counts
-
-    return features
-
-
-def make_model(name):
-    if name == "naive_bayes":
-        return NaiveBayes(alpha=1.0)
-    if name == "decision_tree":
-        return DecisionTree(max_depth=6, min_samples_split=2)
-    if name == "knn":
-        return KNN(k=5)
-    if name == "logistic_regression":
-        return LogisticRegression(learning_rate=0.1, n_iters=300, threshold=0.5, verbose=False)
-    if name == "svm":
-        return SVM(learning_rate=0.001, lambda_param=0.01, n_iters=300)
-    raise ValueError(f"Unsupported model: {name}")
+def build_features(train_texts, test_texts, ngram_max, max_features):
+    vectorizer = CountVectorizer(lowercase=True, ngram_range=(1, ngram_max), max_features=max_features)
+    X_train = vectorizer.fit_transform(train_texts)
+    X_test = vectorizer.transform(test_texts)
+    return {"vectorizer": vectorizer, "X_train": X_train, "X_test": X_test}
 
 
 def compute_metrics(y_true, y_pred):
@@ -309,50 +161,81 @@ def compute_metrics(y_true, y_pred):
     recall = np.divide(tp, tp + fn, out=np.zeros_like(tp), where=(tp + fn) != 0)
     f1 = np.divide(2 * precision * recall, precision + recall, out=np.zeros_like(tp), where=(precision + recall) != 0)
 
+    report_rows = []
+    for idx, cls in enumerate(classes):
+        report_rows.append(
+            {
+                "label": str(cls),
+                "precision": float(precision[idx]),
+                "recall": float(recall[idx]),
+                "f1": float(f1[idx]),
+                "support": int(cm[idx].sum()),
+            }
+        )
+
+    report_rows.append(
+        {
+            "label": "macro_avg",
+            "precision": float(precision.mean()),
+            "recall": float(recall.mean()),
+            "f1": float(f1.mean()),
+            "support": int(len(y_true)),
+        }
+    )
+
+    report = pd.DataFrame(report_rows)
+
     return {
         "accuracy": float(accuracy(y_true, y_pred)),
-        "precision_macro": float(precision.mean()),
-        "recall_macro": float(recall.mean()),
-        "f1_macro": float(f1.mean()),
         "confusion_matrix": cm,
         "classes": classes,
+        "report": report,
     }
 
 
-def train_models(model_names, X_train, X_test, y_train, y_test):
+def train_models(X_train, X_test, y_train, y_test):
     results = {}
 
-    for model_name in model_names:
-        model = make_model(model_name)
-        model.fit(X_train, y_train)
-        predictions = model.predict(X_test)
-        metrics = compute_metrics(y_test, predictions)
-        results[model_name] = {
-            "model": model,
-            "predictions": predictions,
-            "metrics": metrics,
-        }
+    nb_model = NaiveBayes(alpha=1.0)
+    nb_model.fit(X_train, y_train)
+    nb_pred = nb_model.predict(X_test)
+    results["naive_bayes"] = {
+        "model": nb_model,
+        "predictions": nb_pred,
+        "metrics": compute_metrics(y_test, nb_pred),
+    }
+
+    dt_model = DecisionTree(max_depth=8, min_samples_split=5)
+    dt_model.fit(X_train, y_train)
+    dt_pred = dt_model.predict(X_test)
+    results["decision_tree"] = {
+        "model": dt_model,
+        "predictions": dt_pred,
+        "metrics": compute_metrics(y_test, dt_pred),
+    }
 
     return results
 
 
-def save_outputs(save_dir, results, y_test, label_lookup, make_plots):
+def save_outputs(save_dir, results, y_test, label_lookup):
     save_dir.mkdir(parents=True, exist_ok=True)
 
     metrics_payload = {}
+    report_payload = {}
     for model_name, bundle in results.items():
         metrics = bundle["metrics"]
         metrics_payload[model_name] = {
             "accuracy": metrics["accuracy"],
-            "precision_macro": metrics["precision_macro"],
-            "recall_macro": metrics["recall_macro"],
-            "f1_macro": metrics["f1_macro"],
-            "classes": metrics["classes"].tolist(),
+            "classes": [str(value) for value in metrics["classes"].tolist()],
             "confusion_matrix": metrics["confusion_matrix"].tolist(),
         }
+        report_payload[model_name] = bundle["metrics"]["report"].to_dict(orient="records")
 
     with open(save_dir / "metrics.json", "w", encoding="utf-8") as handle:
         json.dump(metrics_payload, handle, indent=2, ensure_ascii=False)
+
+    with open(save_dir / "classification_report.json", "w", encoding="utf-8") as handle:
+        json.dump(report_payload, handle, indent=2, ensure_ascii=False)
 
     prediction_frame = pd.DataFrame({"y_true": y_test})
     for model_name, bundle in results.items():
@@ -362,37 +245,9 @@ def save_outputs(save_dir, results, y_test, label_lookup, make_plots):
     with open(save_dir / "label_lookup.json", "w", encoding="utf-8") as handle:
         json.dump({str(key): value for key, value in label_lookup.items()}, handle, indent=2, ensure_ascii=False)
 
-    if not make_plots:
-        return
-
-    figures_dir = save_dir / "figures"
-    figures_dir.mkdir(parents=True, exist_ok=True)
-
-    accuracy_map = {name: bundle["metrics"]["accuracy"] for name, bundle in results.items()}
-    fig, _ = MetricsVisualizer.plot_accuracy_comparison(accuracy_map)
-    fig.savefig(figures_dir / "accuracy_comparison.png", dpi=120, bbox_inches="tight")
-    plt.close(fig)
-
-    best_model_name = max(results.items(), key=lambda item: item[1]["metrics"]["f1_macro"])[0]
-    for model_name, bundle in results.items():
-        metrics = bundle["metrics"]
-        fig, _ = MetricsVisualizer.plot_confusion_matrix(
-            metrics["confusion_matrix"],
-            metrics["classes"],
-            title=f"Confusion Matrix - {model_name}",
-            normalize=True,
-        )
-        fig.savefig(figures_dir / f"confusion_matrix_{model_name}.png", dpi=120, bbox_inches="tight")
-        plt.close(fig)
-
-    fig, _ = MetricsVisualizer.plot_roc_style_metrics(y_test, results[best_model_name]["predictions"])
-    fig.savefig(figures_dir / f"metrics_{best_model_name}.png", dpi=120, bbox_inches="tight")
-    plt.close(fig)
-
 
 def print_summary(dataset_bundle, features, results):
     data = dataset_bundle["frame"]
-
     print("\n" + "=" * 72)
     print("SENTIMENT ANALYSIS BASELINE")
     print("=" * 72)
@@ -400,27 +255,20 @@ def print_summary(dataset_bundle, features, results):
     print(f"Rows used         : {len(data)}")
     print(f"Text column       : {dataset_bundle['text_col']}")
     print(f"Label column      : {dataset_bundle['label_col']}")
-    print(f"Representation    : {features['representation']}")
     print(f"Vocabulary size   : {len(features['vectorizer'].vocabulary_)}")
     print(f"Train matrix shape: {features['X_train'].shape}")
     print(f"Test matrix shape : {features['X_test'].shape}")
     print("-" * 72)
 
-    for model_name, bundle in sorted(results.items(), key=lambda item: item[1]["metrics"]["f1_macro"], reverse=True):
-        metrics = bundle["metrics"]
-        print(
-            f"{model_name:20s} "
-            f"acc={metrics['accuracy']:.4f} "
-            f"precision={metrics['precision_macro']:.4f} "
-            f"recall={metrics['recall_macro']:.4f} "
-            f"f1={metrics['f1_macro']:.4f}"
-        )
+    for model_name in ["naive_bayes", "decision_tree"]:
+        metrics = results[model_name]["metrics"]
+        print(f"{model_name:20s} acc={metrics['accuracy']:.4f}")
+        print(metrics["report"].to_string(index=False))
+        print("-" * 72)
 
 
-def main():
-    args = parse_args()
+def run_pipeline(args):
     dataset_bundle = load_dataset(args)
-
     processed_texts, _ = preprocess_texts(
         dataset_bundle["frame"]["text"].tolist(),
         remove_stopwords=args.remove_stopwords,
@@ -439,22 +287,18 @@ def main():
     features = build_features(
         X_train_text,
         X_test_text,
-        vectorizer_type=args.vectorizer,
         ngram_max=args.ngram_max,
         max_features=args.max_features,
     )
-    results = train_models(args.models, features["X_train"], features["X_test"], y_train, y_test)
-
-    save_dir = Path(args.save_dir).resolve()
-    save_outputs(
-        save_dir=save_dir,
-        results=results,
-        y_test=y_test,
-        label_lookup=dataset_bundle["label_lookup"],
-        make_plots=not args.no_plots,
-    )
+    results = train_models(features["X_train"], features["X_test"], y_train, y_test)
+    save_outputs(Path(args.save_dir).resolve(), results, y_test, dataset_bundle["label_lookup"])
     print_summary(dataset_bundle, features, results)
-    print(f"Artifacts saved   : {save_dir}")
+    print(f"Artifacts saved   : {Path(args.save_dir).resolve()}")
+
+
+def main():
+    args = parse_args()
+    run_pipeline(args)
 
 
 if __name__ == "__main__":
