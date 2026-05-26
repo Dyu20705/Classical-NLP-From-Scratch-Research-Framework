@@ -169,6 +169,15 @@ def resolve_dataset_path(args):
     if args.dataset == "imdb":
         candidates = sorted((DATA_ROOT / "imdb").glob("*.csv"))
         if not candidates:
+            # Fall back to the SST train split if available, with a clear warning.
+            fallback = DATA_ROOT / "sst" / "train.csv"
+            if fallback.exists():
+                print(
+                    f"Warning: no CSV files found in {DATA_ROOT / 'imdb'}. "
+                    f"Falling back to {fallback}",
+                    file=sys.stderr,
+                )
+                return fallback
             raise FileNotFoundError(f"No CSV file found in {DATA_ROOT / 'imdb'}")
         return candidates[0]
 
@@ -197,7 +206,15 @@ def normalize_labels(series):
 
 def load_dataset(args):
     dataset_path = resolve_dataset_path(args)
-    df = pd.read_csv(dataset_path)
+    try:
+        df = pd.read_csv(dataset_path)
+    except FileNotFoundError:
+        raise FileNotFoundError(
+            f"Dataset file not found: {dataset_path}. "
+            "Pass an explicit path with --dataset-path or place files under data/raw/."
+        )
+    except Exception as exc:
+        raise RuntimeError(f"Failed to read dataset at {dataset_path}: {exc}") from exc
 
     text_col, label_col = infer_text_label_columns(df)
     if args.text_col:
