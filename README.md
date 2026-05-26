@@ -7,7 +7,6 @@ Project này làm bài toán sentiment analysis nhị phân cho positive / negat
 - Chỉ dùng 2 model: Naive Bayes và Decision Tree.
 - Chỉ dùng CountVectorizer cho feature extraction.
 - Chỉ dùng dữ liệu CSV nằm trong `data/raw`.
-- Không dùng TF-IDF, Word2Vec, embedding, transformer, hay model khác.
 
 ## Pipeline
 
@@ -94,7 +93,7 @@ pip install -r requirements.txt
 ### 4. Run the main baseline
 
 ```bash
-python main.py --dataset sst --limit 300 --models naive_bayes decision_tree
+python main.py --dataset sst --limit 300
 ```
 
 ### 5. Launch the notebook
@@ -112,13 +111,13 @@ The repository does not yet present a single canonical benchmark table for the f
 The following numbers are from a **small smoke run** of:
 
 ```bash
-python main.py --dataset sst --limit 300 --models naive_bayes decision_tree --no-plots
+python main.py --dataset sst --limit 300
 ```
 
 | Run Type | Dataset Slice | Model | Accuracy | Macro Precision | Macro Recall | Macro F1 |
 |---|---:|---|---:|---:|---:|---:|
-| Example smoke run | SST, first 300 rows | Naive Bayes | 0.6066 | 0.5924 | 0.5731 | 0.5643 |
-| Example smoke run | SST, first 300 rows | Decision Tree | 0.6066 | 0.6144 | 0.5533 | 0.5107 |
+| Example smoke run | SST, first 300 rows | Naive Bayes | 0.5902 | 0.5794 | 0.5786 | 0.5788 |
+| Example smoke run | SST, first 300 rows | Decision Tree | 0.5738 | 0.5441 | 0.5247 | 0.4877 |
 
 These numbers should be interpreted as **sanity-check outputs**, not as final benchmark claims.
 
