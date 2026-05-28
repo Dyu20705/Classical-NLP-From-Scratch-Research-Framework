@@ -14,6 +14,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from main import run_pipeline
+from src.utils.experiment_tracking import resolve_experiment_save_dir
 
 
 def load_config(path):
@@ -36,6 +37,9 @@ def main(config_path=None):
     vec_cfg = cfg.get("vectorizer", {})
     eval_cfg = cfg.get("evaluation", {})
     out_cfg = cfg.get("output", {})
+    save_root = PROJECT_ROOT / out_cfg.get("results_dir", "results/experiments")
+    run_id = out_cfg.get("run_id")
+    resolved_save_dir = resolve_experiment_save_dir(save_root, run_id=run_id)
 
     args = SimpleNamespace(
         dataset_path=ds_cfg.get("path"),
@@ -49,7 +53,9 @@ def main(config_path=None):
         max_features=vec_cfg.get("max_features", 5000),
         test_size=eval_cfg.get("test_size", 0.2),
         random_state=eval_cfg.get("random_seed", 42),
-        save_dir=out_cfg.get("results_dir", "results/experiments"),
+        save_dir=str(resolved_save_dir),
+        run_id=resolved_save_dir.name,
+        config_path=str(Path(config_path).resolve()),
     )
 
     run_pipeline(args)

@@ -4,6 +4,7 @@ import argparse
 import ast
 import json
 import sys
+from time import perf_counter
 from pathlib import Path
 
 import numpy as np
@@ -20,6 +21,7 @@ from src.models.decision_tree.decision_tree import DecisionTree
 from src.models.naive_bayes.naive_bayes import NaiveBayes
 from src.preprocessing.text_processor import TextProcessor
 from src.utils.helper import train_test_split
+from src.utils.experiment_tracking import write_experiment_tracking
 
 DATA_ROOT = PROJECT_ROOT / "data" / "raw"
 RESULTS_ROOT = PROJECT_ROOT / "results"
@@ -39,6 +41,8 @@ def parse_args():
     parser.add_argument("--test-size", type=float, default=0.2)
     parser.add_argument("--random-state", type=int, default=42)
     parser.add_argument("--save-dir", type=str, default=str(RESULTS_ROOT / "cli"))
+    parser.add_argument("--run-id", type=str, default=None)
+    parser.add_argument("--config-path", type=str, default=None)
     return parser.parse_args()
 
 
@@ -268,6 +272,7 @@ def print_summary(dataset_bundle, features, results):
 
 
 def run_pipeline(args):
+    started = perf_counter()
     dataset_bundle = load_dataset(args)
     processed_texts, _ = preprocess_texts(
         dataset_bundle["frame"]["text"].tolist(),
@@ -291,9 +296,19 @@ def run_pipeline(args):
         max_features=args.max_features,
     )
     results = train_models(features["X_train"], features["X_test"], y_train, y_test)
-    save_outputs(Path(args.save_dir).resolve(), results, y_test, dataset_bundle["label_lookup"])
+    resolved_save_dir = Path(args.save_dir).resolve()
+    save_outputs(resolved_save_dir, results, y_test, dataset_bundle["label_lookup"])
+
+    write_experiment_tracking(
+        save_dir=resolved_save_dir,
+        args=args,
+        dataset_bundle=dataset_bundle,
+        model_results=results,
+        elapsed_seconds=perf_counter() - started,
+    )
+
     print_summary(dataset_bundle, features, results)
-    print(f"Artifacts saved   : {Path(args.save_dir).resolve()}")
+    print(f"Artifacts saved   : {resolved_save_dir}")
 
 
 def main():
