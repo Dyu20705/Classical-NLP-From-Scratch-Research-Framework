@@ -5,30 +5,30 @@ from src.models.base import BaseModel
 
 class Node:
     def __init__(self, feature_idx=None, threshold=None, info_gain=None, left=None, right=None, value=None):
-        self.feature_idx = feature_idx  # Feature index for splitting
-        self.threshold = threshold  # Threshold value for splitting
-        self.info_gain = info_gain  # Information gain from the split
-        self.left = left  # Left child node
-        self.right = right  # Right child node
-        self.value = value  # Class label for leaf nodes
+        self.feature_idx = feature_idx                               
+        self.threshold = threshold                                 
+        self.info_gain = info_gain                                   
+        self.left = left                   
+        self.right = right                    
+        self.value = value                              
 
 
 class DecisionTree(BaseModel):
-    """
-    Decision Tree classifier using Information Gain (entropy-based) splitting.
-    
-    Supports:
-    - Dense numpy arrays (converts sparse to dense if needed)
-    - Max depth and min samples per split constraints
-    - Entropy-based information gain for split selection
-    
-    Parameters:
-    -----------
-    min_samples_split : int, default=2
-        Minimum number of samples required to split a node.
-    max_depth : int, default=2
-        Maximum depth of the tree.
-    """
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+       
     
     def __init__(self, min_samples_split=2, max_depth=2):
         self.min_samples_split = min_samples_split
@@ -36,7 +36,7 @@ class DecisionTree(BaseModel):
         self.root = None
 
     def _build_tree(self, dataset, curr_depth=0):
-        """Recursively build decision tree."""
+                                              
         X, y = dataset[:, :-1], dataset[:, -1]
         num_samples, num_features = X.shape
 
@@ -53,12 +53,12 @@ class DecisionTree(BaseModel):
                     right=right_node
                 )
         
-        # Leaf node: most common class
+                                      
         leaf_value = Counter(y).most_common(1)[0][0]
         return Node(value=leaf_value)
 
     def _get_best_split(self, dataset, num_features):
-        """Find the best split for a dataset."""
+                                                
         best_split = {
             "feature_idx": None,
             "threshold": None,
@@ -92,7 +92,7 @@ class DecisionTree(BaseModel):
         return best_split
 
     def _calculate_info_gain(self, parent_y, left_y, right_y):
-        """Calculate information gain from a split."""
+                                                      
         if len(parent_y) == 0:
             return 0
         
@@ -109,7 +109,7 @@ class DecisionTree(BaseModel):
         return info_gain
 
     def _calculate_entropy(self, y):
-        """Calculate entropy of a label distribution."""
+                                                        
         if len(y) == 0:
             return 0
         
@@ -124,51 +124,51 @@ class DecisionTree(BaseModel):
         return entropy
 
     def fit(self, X, y):
-        """
-        Train the decision tree.
-        
-        Parameters:
-        -----------
-        X : array-like or sparse matrix of shape (n_samples, n_features)
-            Training features.
-        y : array-like of shape (n_samples,)
-            Training labels.
-        
-        Returns:
-        --------
-        self : DecisionTree
-            Fitted tree instance.
-        """
-        # Convert sparse to dense if needed
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+           
+                                           
         if hasattr(X, 'toarray'):
             X = X.toarray()
         
         X = np.asarray(X)
         y = np.asarray(y).flatten()
         
-        # Combine features and target
+                                     
         dataset = np.concatenate((X, y.reshape(-1, 1)), axis=1)
         
-        # Build tree
+                    
         self.root = self._build_tree(dataset)
         
         return self
 
     def predict(self, X):
-        """
-        Make predictions on new data.
-        
-        Parameters:
-        -----------
-        X : array-like or sparse matrix of shape (n_samples, n_features)
-            Features to predict on.
-        
-        Returns:
-        --------
-        predictions : np.ndarray of shape (n_samples,)
-            Predicted class labels.
-        """
-        # Convert sparse to dense if needed
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+           
+                                           
         if hasattr(X, 'toarray'):
             X = X.toarray()
         
@@ -178,7 +178,7 @@ class DecisionTree(BaseModel):
         return np.array(predictions)
 
     def _predict_single(self, row, node):
-        """Predict class for a single sample by traversing the tree."""
+                                                                       
         if node.value is not None:
             return node.value
         
@@ -190,7 +190,7 @@ class DecisionTree(BaseModel):
             return self._predict_single(row, node.right)
 
     def print_tree(self, node=None, depth=0, indent="|    "):
-        """Print tree structure (for debugging)."""
+                                                   
         prefix = indent * depth
 
         if node is None:

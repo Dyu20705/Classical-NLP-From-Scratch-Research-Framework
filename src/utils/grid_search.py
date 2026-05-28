@@ -65,7 +65,7 @@ def _cross_val_accuracy(model_factory, X, y, cv=5, random_state=42):
 
 
 def grid_search_naive_bayes(X, y, param_grid=None, cv=5, random_state=42, verbose=True):
-    """Manual grid search for the local NaiveBayes implementation."""
+                                                                     
     grid = param_grid or param_grid_naive_bayes
     alpha_values = grid.get("alpha", [1.0])
 
@@ -97,7 +97,7 @@ def grid_search_naive_bayes(X, y, param_grid=None, cv=5, random_state=42, verbos
 
 
 def grid_search_decision_tree(X, y, param_grid=None, cv=5, random_state=42, verbose=True):
-    """Manual grid search for the local DecisionTree implementation."""
+                                                                       
     grid = param_grid or param_grid_decision_tree
     max_depth_values = grid.get("max_depth", [3])
     min_samples_split_values = grid.get("min_samples_split", [2])
